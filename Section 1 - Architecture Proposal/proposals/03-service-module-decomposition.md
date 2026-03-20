@@ -2,7 +2,7 @@
 
 ## Arquitectura Elegida: Monolito Modular
 
-Siguiendo la recomendación del documento `01-high-level-architecture.md`, la organización del código refleja un monolito modular donde cada bounded context es un módulo independiente con sus propias capas internas. Los módulos se comunican entre sí únicamente a través de sus interfaces públicas (`PublicAPI`), nunca mediante importaciones cruzadas de capas internas.
+En base a la decisión del documento `01-high-level-architecture.md`, la organización del código refleja un monolito modular donde cada bounded context es un módulo independiente con sus propias capas internas. Los módulos se comunican entre sí únicamente a través de sus interfaces públicas (`PublicAPI`), nunca mediante importaciones cruzadas de capas internas.
 
 ---
 
