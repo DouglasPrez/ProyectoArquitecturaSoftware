@@ -117,7 +117,9 @@ sequenceDiagram
         LST-->>A: 403 "No tienes acceso a los detalles completos de esta publicación"
     else Con contrato activo
         CTR-->>LST: true
-        LST-->>A: 200 {fullDetails: {address, ownerPhone, cadastralInfo, ...}
+        LST-->>A: 200 {fullDetails: {address, ownerPhone, cadastralInfo}}
+    end
+```
 
 ---
 
