@@ -14,33 +14,35 @@ Este diagrama muestra PropConnect como una única caja de sistema, rodeada de to
 ```mermaid
 C4Context
     title PropConnect — Diagrama de Contexto del Sistema
+    
+    !define DIRECTION top to bottom
 
     Person(consultant, "Consultor", "Busca inmuebles para comprar o alquilar. Usa filtros, IA y agenda citas.")
     Person(seller, "Vendedor", "Publica inmuebles en venta o renta. Contrata asesores y tramitadores.")
-    Person(advisor, "Asesor", "Ofrece servicios inmobiliarios bajo contrato. Accede a datos completos del inmueble.")
-    Person(processor, "Tramitador", "Gestiona procesos legales entre comprador y vendedor bajo contrato.")
-    Person(admin, "Administrador", "Supervisa la plataforma, gestiona usuarios y resuelve quejas.")
+    Person(advisor, "Asesor", "Ofrece servicios inmobiliarios bajo contrato. Accede a datos del inmueble.")
+    Person(processor, "Tramitador", " Gestiona procesos legales entre comprador y vendedor.")
+    Person(admin, "Administrador", "Supervisa la plataforma, gestiona usuarios y quejas.")
 
     System(propconnect, "PropConnect", "Marketplace de bienes raíces que conecta consultores, vendedores, asesores y tramitadores.")
 
-    System_Ext(stripe, "Stripe", "Procesa pagos de anuncios boost y comisiones. Envía webhooks de confirmación.")
-    System_Ext(sendgrid, "SendGrid", "Entrega notificaciones por email: bienvenida, contratos, facturas, recordatorios.")
-    System_Ext(firebase, "Firebase Cloud Messaging", "Entrega notificaciones push a dispositivos móviles.")
-    System_Ext(googlemaps, "Google Maps API", "Proporciona mapas y geocodificación para ubicaciones de inmuebles.")
-    System_Ext(openai, "OpenAI API", "Potencia el asistente IA: recomendaciones, chatbot y valoración de inmuebles.")
+    System_Ext(stripe, "Stripe", "Pagos de boosts y comisiones + webhooks")
+    System_Ext(sendgrid, "SendGrid", "Notificaciones por email")
+    System_Ext(firebase, "Firebase Cloud Messaging", "Notificaciones push")
+    System_Ext(googlemaps, "Google Maps API", "Mapas y geocodificación")
+    System_Ext(openai, "OpenAI API", "IA: recomendaciones y chatbot")
 
-    Rel(consultant, propconnect, "Busca inmuebles, agenda citas, usa IA", "HTTPS")
-    Rel(seller, propconnect, "Gestiona publicaciones, contrata profesionales, paga boosts", "HTTPS")
-    Rel(advisor, propconnect, "Acepta contratos, agenda citas, accede a datos de inmuebles", "HTTPS")
-    Rel(processor, propconnect, "Acepta contratos, gestiona procesos legales", "HTTPS")
-    Rel(admin, propconnect, "Administra usuarios, resuelve quejas, monitorea la plataforma", "HTTPS")
+    Rel(consultant, propconnect, "Busca, agenda, IA", "HTTPS")
+    Rel(seller, propconnect, "Gestiona publicaciones, paga boosts", "HTTPS")
+    Rel(advisor, propconnect, "Acepta contratos, agenda, datos", "HTTPS")
+    Rel(processor, propconnect, "Acepta contratos, gestiona procesos", "HTTPS")
+    Rel(admin, propconnect, "Administración", "HTTPS")
 
-    Rel(propconnect, stripe, "Crea PaymentIntents y recibe webhooks de pago", "HTTPS/REST")
-    Rel(stripe, propconnect, "Envía webhooks payment_intent.succeeded / failed", "HTTPS Webhook")
-    Rel(propconnect, sendgrid, "Envía emails transaccionales vía API", "HTTPS/REST")
-    Rel(propconnect, firebase, "Envía notificaciones push vía FCM API", "HTTPS/REST")
-    Rel(propconnect, googlemaps, "Geocodifica direcciones y renderiza mapas", "HTTPS/REST")
-    Rel(propconnect, openai, "Envía prompts y contexto de inmuebles para recomendaciones y chat", "HTTPS/REST")
+    Rel(propconnect, stripe, "POST PaymentIntents", "HTTPS/REST")
+    Rel(stripe, propconnect, "Webhooks: payment_intent.*", "HTTPS")
+    Rel(propconnect, sendgrid, "POST emails", "HTTPS/REST")
+    Rel(propconnect, firebase, "POST notificaciones push", "HTTPS/REST")
+    Rel(propconnect, googlemaps, "GET geocodificación", "HTTPS/REST")
+    Rel(propconnect, openai, "POST prompts", "HTTPS/REST")
 ```
 
 ## Notas sobre el Diagrama
