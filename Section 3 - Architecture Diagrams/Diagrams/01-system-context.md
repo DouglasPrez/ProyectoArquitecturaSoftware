@@ -15,32 +15,31 @@ Este diagrama muestra PropConnect como una única caja de sistema, rodeada de to
 C4Context
     title PropConnect — Diagrama de Contexto del Sistema
 
-    Person(consultant, "Consultor", "Busca inmuebles para comprar o alquilar. Usa filtros, IA y agenda citas.")
-    Person(seller, "Vendedor", "Publica inmuebles en venta o renta. Contrata asesores y tramitadores.")
-    Person(advisor, "Asesor", "Ofrece servicios inmobiliarios bajo contrato. Accede a datos del inmueble.")
-    Person(processor, "Tramitador", " Gestiona procesos legales entre comprador y vendedor.")
-    Person(admin, "Administrador", "Supervisa la plataforma, gestiona usuarios y quejas.")
+    Person(consultant, "Consultor", "Busca inmuebles.<br/>Usa filtros e IA.")
+    Person(seller, "Vendedor", "Publica inmuebles.<br/>Contrata servicios.")
+    Person(advisor, "Asesor", "Ofrece servicios.<br/>Accede a datos.")
+    Person(processor, "Tramitador", "Gestiona<br/>procesos legales.")
+    Person(admin, "Administrador", "Supervisa la<br/>plataforma.")
 
-    System(propconnect, "PropConnect", "Marketplace de bienes raíces que conecta consultores, vendedores, asesores y tramitadores.")
+    System(propconnect, "PropConnect", "Marketplace inmobiliario.<br/>Conecta a los usuarios.")
 
-    System_Ext(stripe, "Stripe", "Pagos de boosts y comisiones + webhooks")
-    System_Ext(sendgrid, "SendGrid", "Notificaciones por email")
-    System_Ext(firebase, "Firebase Cloud Messaging", "Notificaciones push")
-    System_Ext(googlemaps, "Google Maps API", "Mapas y geocodificación")
-    System_Ext(openai, "OpenAI API", "IA: recomendaciones y chatbot")
+    System_Ext(stripe, "Stripe", "Procesa pagos<br/>y webhooks")
+    System_Ext(sendgrid, "SendGrid", "Notificaciones<br/>por email")
+    System_Ext(firebase, "Firebase (FCM)", "Notificaciones<br/>push móviles")
+    System_Ext(googlemaps, "Google Maps", "Geocodificación<br/>y mapas")
+    System_Ext(openai, "OpenAI API", "Motor de IA<br/>y recomendaciones")
 
-    Rel_D(consultant, propconnect, "Busca, agenda, IA", "HTTPS")
-    Rel_D(seller, propconnect, "Gestiona publicaciones", "HTTPS")
-    Rel_D(advisor, propconnect, "Acepta contratos", "HTTPS")
-    Rel_D(processor, propconnect, "Gestiona procesos", "HTTPS")
-    Rel_L(admin, propconnect, "Administración", "HTTPS")
+    Rel(consultant, propconnect, "Busca y agenda", "HTTPS")
+    Rel(seller, propconnect, "Publica y paga", "HTTPS")
+    Rel(advisor, propconnect, "Acepta contratos", "HTTPS")
+    Rel(processor, propconnect, "Gestiona trámites", "HTTPS")
+    Rel(admin, propconnect, "Administración", "HTTPS")
 
-    Rel_D(propconnect, stripe, "POST PaymentIntents", "HTTPS/REST")
-    Rel_U(stripe, propconnect, "Webhooks", "HTTPS")
-    Rel_D(propconnect, sendgrid, "POST emails", "HTTPS/REST")
-    Rel_D(propconnect, firebase, "POST notificaciones push", "HTTPS/REST")
-    Rel_D(propconnect, googlemaps, "GET geocodificación", "HTTPS/REST")
-    Rel_D(propconnect, openai, "POST prompts", "HTTPS/REST")
+    BiRel(propconnect, stripe, "Pagos y Webhooks", "REST")
+    Rel(propconnect, sendgrid, "Envía emails", "REST")
+    Rel(propconnect, firebase, "Envía push", "REST")
+    Rel(propconnect, googlemaps, "Pide mapas", "REST")
+    Rel(propconnect, openai, "Envía prompts", "REST")
 ```
 
 ## Notas sobre el Diagrama
