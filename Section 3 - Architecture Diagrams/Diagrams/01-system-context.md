@@ -29,18 +29,18 @@ C4Context
     System_Ext(googlemaps, "Google Maps API", "Mapas y geocodificación")
     System_Ext(openai, "OpenAI API", "IA: recomendaciones y chatbot")
 
-    Rel(consultant, propconnect, "Busca, agenda, IA", "HTTPS")
-    Rel(seller, propconnect, "Gestiona publicaciones, paga boosts", "HTTPS")
-    Rel(advisor, propconnect, "Acepta contratos, agenda, datos", "HTTPS")
-    Rel(processor, propconnect, "Acepta contratos, gestiona procesos", "HTTPS")
-    Rel(admin, propconnect, "Administración", "HTTPS")
+    Rel_D(consultant, propconnect, "Busca, agenda, IA", "HTTPS")
+    Rel_D(seller, propconnect, "Gestiona publicaciones", "HTTPS")
+    Rel_D(advisor, propconnect, "Acepta contratos", "HTTPS")
+    Rel_D(processor, propconnect, "Gestiona procesos", "HTTPS")
+    Rel_L(admin, propconnect, "Administración", "HTTPS")
 
-    Rel(propconnect, stripe, "POST PaymentIntents", "HTTPS/REST")
-    Rel(stripe, propconnect, "Webhooks: payment_intent.*", "HTTPS")
-    Rel(propconnect, sendgrid, "POST emails", "HTTPS/REST")
-    Rel(propconnect, firebase, "POST notificaciones push", "HTTPS/REST")
-    Rel(propconnect, googlemaps, "GET geocodificación", "HTTPS/REST")
-    Rel(propconnect, openai, "POST prompts", "HTTPS/REST")
+    Rel_D(propconnect, stripe, "POST PaymentIntents", "HTTPS/REST")
+    Rel_U(stripe, propconnect, "Webhooks", "HTTPS")
+    Rel_D(propconnect, sendgrid, "POST emails", "HTTPS/REST")
+    Rel_D(propconnect, firebase, "POST notificaciones push", "HTTPS/REST")
+    Rel_D(propconnect, googlemaps, "GET geocodificación", "HTTPS/REST")
+    Rel_D(propconnect, openai, "POST prompts", "HTTPS/REST")
 ```
 
 ## Notas sobre el Diagrama
