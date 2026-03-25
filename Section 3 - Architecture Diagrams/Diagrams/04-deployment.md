@@ -47,9 +47,7 @@ graph TD
         class DATA db
 
         subgraph OBS ["Observabilidad (Contenedores)"]
-             PROM["Prometheus"]
-            LOKI["Loki"]
-            GRAF["Grafana\nDashboards"]
+            MON[("Stack Monitoreo\nPrometheus+Loki+Grafana")]
         end
         class OBS obs
     end
@@ -69,10 +67,7 @@ graph TD
     NEST -->|HTTP :9200| ES
 
     %% Observabilidad
-    NEST -.->|/metrics| PROM
-    NEST -.->|Logs JSON| LOKI
-    PROM -.-> GRAF
-    LOKI -.-> GRAF
+    NEST -.->|TCP Métricas/Logs| MON
 ```
 
 ### Vista 2: Servicios Externos (Egress)
@@ -122,7 +117,7 @@ Consistente con ADR-001, el monolito corre como un único proceso. En caso de al
 - **Redis**: Caché de respuestas de Listings frecuentemente solicitados y almacenamiento de refresh tokens. No es fuente de verdad — si cae, el sistema funciona con degradación de rendimiento.
 
 ### Observabilidad en el Mismo Servidor
-En la fase inicial, Prometheus, Grafana y Loki corren en el mismo servidor para simplificar la operación. Esto tiene el riesgo de que si el servidor falla, también se pierden los logs. En producción madura, se migraría a un servidor dedicado o a servicios gestionados (Grafana Cloud, Datadog).
+En la fase inicial, el **Stack de Monitoreo** (Prometheus, Grafana y Loki) corre agolpado lógicamente en el mismo servidor para simplificar la operación. Esto tiene el riesgo de que si el servidor falla, también se pierden los logs. En producción madura, se migraría a un servidor dedicado o a servicios gestionados independientes.
 
 ### S3 para Imágenes
 Las imágenes de los inmuebles (fotos de propiedades) no se almacenan en el contenedor ni en PostgreSQL. Se suben directamente a AWS S3 desde el cliente (presigned URLs) y las URLs se guardan en la tabla `lst_properties.mediaUrls`. Esto evita que el servidor de la aplicación sea un cuello de botella para uploads de imágenes pesadas.

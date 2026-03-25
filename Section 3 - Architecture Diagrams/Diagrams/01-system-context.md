@@ -6,7 +6,7 @@ Este diagrama muestra PropConnect como una única caja de sistema, rodeada de to
 
 **Decisiones de diseño notables:**
 - Stripe es el único proveedor de pagos para simplificar la integración y aprovechar su soporte nativo de webhooks.
-- SendGrid y Firebase Cloud Messaging son los canales de notificación (email y push respectivamente), ambos servicios gestionados para no tener que operar infraestructura de entrega de mensajes.
+- SendGrid y Firebase Cloud Messaging (agrupados visualmente como "Notificaciones") son los canales de email y push respectivamente. Ambos son servicios gestionados para no operar infraestructura propia.
 - Google Maps API se usa para la visualización de ubicaciones de inmuebles en el frontend.
 - OpenAI es la fuente del módulo de IA — el sistema no entrena modelos propios.
 - El Administrador es el único actor que no interactúa a través del frontend web estándar, sino a través de un panel de administración separado.
@@ -24,8 +24,7 @@ C4Context
     System(propconnect, "PropConnect", "Marketplace inmobiliario.<br/>Conecta a los usuarios.")
 
     System_Ext(stripe, "Stripe", "Procesa pagos<br/>y webhooks")
-    System_Ext(sendgrid, "SendGrid", "Notificaciones<br/>por email")
-    System_Ext(firebase, "Firebase (FCM)", "Notificaciones<br/>push móviles")
+    System_Ext(notifications, "Notificaciones", "SendGrid (Email) y<br/>FCM (Push)")
     System_Ext(googlemaps, "Google Maps", "Geocodificación<br/>y mapas")
     System_Ext(openai, "OpenAI API", "Motor de IA<br/>y recomendaciones")
 
@@ -36,8 +35,7 @@ C4Context
     Rel(admin, propconnect, "Administración", "HTTPS")
 
     BiRel(propconnect, stripe, "Pagos y Webhooks", "REST")
-    Rel(propconnect, sendgrid, "Envía emails", "REST")
-    Rel(propconnect, firebase, "Envía push", "REST")
+    Rel(propconnect, notifications, "Emails y push", "REST")
     Rel(propconnect, googlemaps, "Pide mapas", "REST")
     Rel(propconnect, openai, "Envía prompts", "REST")
 ```
