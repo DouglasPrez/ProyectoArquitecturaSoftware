@@ -10,66 +10,102 @@ Este diagrama muestra la topología física y lógica del sistema PropConnect en
 - El stack de observabilidad (Prometheus, Grafana, Loki) corre en el mismo servidor en la fase inicial. En producción madura, se migraría a infraestructura separada.
 - Las zonas de red están divididas en: Internet Público, DMZ (Nginx), Red Interna VPC, y Servicios Gestionados Externos.
 
+> **Nota de visualización:** Para mayor claridad, la arquitectura se ha dividido en dos vistas: la topología interna en la VPC y las integraciones de salida hacia terceros.
+
+### Vista 1: Topología de Red, Datos y Observabilidad
+
+Este diagrama ilustra las zonas de red (Internet, DMZ, VPC), cómo el tráfico de los usuarios fluye hacia la aplicación, y cómo el contenedor principal interactúa con sus bases de datos y herramientas de monitoreo locales.
+
 ```mermaid
-graph TB
-    subgraph INTERNET["🌐 Internet Público"]
-        WEB["Navegador Web\n(SPA React)"]
-        MOB["App Móvil\n(React Native - futuro)"]
-        STRIPE_EXT["Stripe\n(Webhooks → PropConnect)"]
-    end
+graph TD
+    classDef pub fill:#f9fbe7,stroke:#1565c0,stroke-width:2px,color:#000
+    classDef dmz fill:#ffe0b2,stroke:#f57f17,stroke-width:2px,color:#000
+    classDef vpc fill:#e8eaf6,stroke:#2e7d32,stroke-width:2px,color:#000
+    classDef db fill:#ede7f6,stroke:#283593,stroke-width:1px,color:#000
+    classDef obs fill:#fff3e0,stroke:#e65100,stroke-width:1px,color:#000
 
-    subgraph DMZ["🔶 DMZ — Punto de Entrada"]
-        NGINX["Nginx\nReverse Proxy + Static Files\n:443 HTTPS"]
+    subgraph INTERNET ["🌐 Internet Público"]
+        WEB["Navegador Web"]
+        MOB["App Móvil"]
+        STRIPE_WH["Webhooks Stripe"]
     end
+    class INTERNET pub
 
-    subgraph VPC["🔷 Red Interna — VPC Privada"]
-        subgraph APP["Contenedor: propconnect-api"]
-            NEST["NestJS App\n(Monolito Modular)\n:3000"]
+    subgraph DMZ ["🔶 DMZ (Punto de Entrada)"]
+        NGINX["Nginx Proxy\nEscucha :443 HTTPS"]
+    end
+    class DMZ dmz
+
+    subgraph VPC ["🔷 Red Interna (VPC Privada)"]
+        NEST["Contenedor: propconnect-api\n(NestJS - Monolito Modular)"]
+        
+        subgraph DATA ["Almacenamiento (Contenedores)"]
+            PG[("PostgreSQL 16\nTransaccional")]
+            REDIS[("Redis 7\nCaché/Sesión")]
+            ES[("Elasticsearch 8\nBúsquedas")]
         end
+        class DATA db
 
-        subgraph DATA["Contenedores de Datos"]
-            PG["PostgreSQL 16\npropconnect_db\n:5432"]
-            ES["Elasticsearch 8\nÍndice de Listings\n:9200"]
-            REDIS["Redis 7\nCaché + Sesiones\n:6379"]
+        subgraph OBS ["Observabilidad (Contenedores)"]
+             PROM["Prometheus"]
+            LOKI["Loki"]
+            GRAF["Grafana\nDashboards"]
         end
-
-        subgraph OBS["Contenedores de Observabilidad"]
-            PROM["Prometheus\nMétricas\n:9090"]
-            GRAF["Grafana\nDashboards\n:3001"]
-            LOKI["Loki\nLogs\n:3100"]
-        end
+        class OBS obs
     end
+    class VPC vpc
 
-    subgraph EXTERNAL["☁️ Servicios Externos Gestionados"]
-        STRIPE_SVC["Stripe API\nPagos"]
-        SENDGRID["SendGrid\nEmail"]
-        FCM["Firebase FCM\nPush Notifications"]
-        GMAPS["Google Maps API\nGeolocalización"]
-        OPENAI["OpenAI API\nModelo GPT-4o"]
-        S3["AWS S3\nImágenes de Inmuebles"]
+    %% Conexiones Entrantes
+    WEB -->|HTTPS| NGINX
+    MOB -->|HTTPS| NGINX
+    STRIPE_WH -->|POST| NGINX
+
+    %% Proxy a App
+    NGINX -->|HTTP :3000| NEST
+
+    %% Conexiones de Datos
+    NEST -->|TCP :5432| PG
+    NEST -->|TCP :6379| REDIS
+    NEST -->|HTTP :9200| ES
+
+    %% Observabilidad
+    NEST -.->|/metrics| PROM
+    NEST -.->|Logs JSON| LOKI
+    PROM -.-> GRAF
+    LOKI -.-> GRAF
+```
+
+### Vista 2: Servicios Externos (Egress)
+
+Este diagrama se enfoca exclusivamente en las llamadas de red salientes (egress) que realiza el backend hacia servicios en la nube de terceros completamente gestionados.
+
+```mermaid
+graph LR
+    classDef vpc fill:#e8eaf6,stroke:#2e7d32,stroke-width:2px,color:#000
+    classDef ext fill:#eceff1,stroke:#4527a0,stroke-width:2px,color:#000
+
+    subgraph VPC ["🔷 Red Interna"]
+        NEST["Contenedor:\npropconnect-api"]
     end
+    class VPC vpc
 
-    WEB -->|"HTTPS :443"| NGINX
-    MOB -->|"HTTPS :443"| NGINX
-    STRIPE_EXT -->|"HTTPS Webhook POST /payments/webhook"| NGINX
-    NGINX -->|"HTTP :3000 (interno)"| NEST
-    NGINX -->|"Sirve /static"| NGINX
+    subgraph EXT ["☁️ Servicios Externos Gestionados"]
+        STRIPE["💳 Stripe API (Pagos)"]
+        SENDGRID["📧 SendGrid (Emails)"]
+        FCM["📱 Firebase (Push)"]
+        GMAPS["🗺️ Google Maps (Geocoding)"]
+        OAI["🤖 OpenAI API (Chat/IA)"]
+        S3["🗄️ AWS S3 (Imágenes)"]
+    end
+    class EXT ext
 
-    NEST -->|"TCP :5432"| PG
-    NEST -->|"HTTP :9200"| ES
-    NEST -->|"TCP :6379"| REDIS
-
-    NEST -->|"HTTPS API"| STRIPE_SVC
-    NEST -->|"HTTPS API"| SENDGRID
-    NEST -->|"HTTPS API"| FCM
-    NEST -->|"HTTPS API"| GMAPS
-    NEST -->|"HTTPS API"| OPENAI
-    NEST -->|"HTTPS SDK"| S3
-
-    NEST -->|"Métricas /metrics"| PROM
-    NEST -->|"Logs JSON stdout"| LOKI
-    PROM -->|"Datasource"| GRAF
-    LOKI -->|"Datasource"| GRAF
+    %% Relaciones hacia afuera
+    NEST -->|REST HTTPS| STRIPE
+    NEST -->|REST HTTPS| SENDGRID
+    NEST -->|REST HTTPS| FCM
+    NEST -->|REST HTTPS| GMAPS
+    NEST -->|REST HTTPS| OAI
+    NEST -->|SDK HTTPS| S3
 ```
 
 ## Explicación de Decisiones de Topología
