@@ -11,55 +11,77 @@ Este diagrama muestra las relaciones entre todos los bounded contexts de PropCon
 
 ```mermaid
 graph TD
-    subgraph CORE["🔵 Core Domain"]
-        IAM["🔐 Identity & Access\nIAM"]
-        LST["🏠 Listings"]
-        CTR["📄 Contracts"]
+    %% Definición de estilos para visualización clara
+    classDef core fill:#e3f2fd,stroke:#0288d1,stroke-width:2px,color:#000
+    classDef support fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#000
+    classDef generic fill:#f5f5f5,stroke:#616161,stroke-width:2px,color:#000
+    
+    %% Agrupaciones
+    subgraph CoreDomain [🔵 Core Domain]
+        IAM[🔐 Identity & Access]
+        LST[🏠 Listings]
+        CTR[📄 Contracts]
     end
 
-    subgraph SUPPORT["🟢 Supporting Subdomains"]
-        PAY["💳 Payments"]
-        APT["📅 Appointments"]
-        REV["⭐ Reviews & Ratings"]
-        AIC["🤖 AI Consultant"]
+    subgraph SupportDomain [🟢 Supporting Subdomains]
+        AIC[🤖 AI]
+        APT[📅 Appointments]
+        PAY[💳 Payments]
+        REV[⭐ Reviews]
     end
 
-    subgraph GENERIC["⚪ Generic Subdomains"]
-        NTF["🔔 Notifications"]
+    subgraph GenericDomain [⚪ Generic Subdomains]
+        NTF[🔔 Notifications]
     end
 
-    IAM -->|"OHS/PL\nJWT Auth Token"| LST
-    IAM -->|"OHS/PL\nJWT Auth Token"| CTR
-    IAM -->|"OHS/PL\nJWT Auth Token"| PAY
-    IAM -->|"OHS/PL\nJWT Auth Token"| APT
-    IAM -->|"OHS/PL\nJWT Auth Token"| REV
-    IAM -->|"OHS/PL\nJWT Auth Token"| AIC
+    %% Aplicación de colores
+    class IAM,LST,CTR core
+    class AIC,APT,PAY,REV support
+    class NTF generic
 
-    LST -->|"ACL\nListingRef → ContractListing"| CTR
-    LST -->|"OHS/PL\nListingData"| AIC
-    LST -->|"OHS/PL\nListingRef"| APT
+    %% --- RELACIONES CLARAS Y SIMPLIFICADAS ---
 
-    CTR -->|"Partnership\nContractSigned event"| PAY
-    CTR -->|"OHS/PL\nContractRef"| REV
+    %% 1. Autenticación IAM (Flechas punteadas para limpiar la vista de negocio principal)
+    IAM -.->|OHS/PL Auth| LST
+    IAM -.->|OHS/PL Auth| CTR
+    IAM -.->|OHS/PL Auth| PAY
+    IAM -.->|OHS/PL Auth| APT
+    IAM -.->|OHS/PL Auth| AIC
+    IAM -.->|OHS/PL Auth| REV
 
-    APT -->|"OHS/PL\nAppointmentRef"| REV
+    %% 2. Lógica Core y Flujos de Negocio (Flechas sólidas)
+    LST -->|ACL| CTR
+    LST -->|OHS/PL| AIC
+    LST -->|OHS/PL| APT
+    
+    CTR -->|Partnership| PAY
+    CTR -->|OHS/PL| REV
+    APT -->|OHS/PL| REV
 
-    PAY -->|"CF\nPaymentCompleted event"| NTF
-    APT -->|"CF\nAppointmentScheduled event"| NTF
-    CTR -->|"CF\nContractSigned event"| NTF
-    REV -->|"CF\nReviewSubmitted event"| NTF
-    IAM -->|"CF\nUserRegistered event"| NTF
-    LST -->|"CF\nListingBoosted event"| NTF
+    %% 3. Flujo Asíncrono hacia Notificaciones (Flechas gruesas)
+    IAM ===>|CF Event| NTF
+    LST ===>|CF Event| NTF
+    CTR ===>|CF Event| NTF
+    PAY ===>|CF Event| NTF
+    APT ===>|CF Event| NTF
+    REV ===>|CF Event| NTF
 ```
 
-## Leyenda de Patrones de Integración
+## Leyenda de Patrones de Integración y Relaciones
 
 | Patrón | Símbolo | Descripción en PropConnect |
 |---|---|---|
-| **OHS/PL** | Open Host Service / Published Language | El contexto proveedor expone una interfaz estable y documentada (`public-api.ts`). El consumidor la usa sin adaptar. Ejemplo: IAM expone `getUserById()` que todos consumen igual. |
-| **ACL** | Anti-Corruption Layer | El contexto consumidor traduce el modelo del proveedor al suyo propio para proteger su dominio. Ejemplo: Contracts traduce el `Listing` de LST a su propia entidad `ContractListing`. |
-| **CF** | Conformist | El contexto consumidor adopta el modelo del proveedor sin transformación. Ejemplo: Notifications consume eventos de todos los contextos usando sus payloads directamente. |
-| **Partnership** | Coordinación mutua | Dos contextos evolucionan juntos. Ejemplo: Contracts y Payments deben coordinarse cuando se firma un contrato que requiere pago. |
+| **OHS/PL** | Open Host Service / Published Language | El contexto proveedor expone una API estable y documentada. El consumidor se adapta a ella sin fricción. |
+| **ACL** | Anti-Corruption Layer | El contexto consumidor (downstream) traduce el modelo para no contaminar su propia lógica de dominio (ej. Listing → ContractListing). |
+| **CF** | Conformist | El consumidor adopta 100% el modelo del proveedor. Caso de `Notifications`, que consume los eventos (payloads) tal cual llegan. |
+| **Partnership** | Coordinación Mutua | Ambos contextos evolucionan resolviendo cambios juntos. Un Contrato no sirve sin un Pago y viceversa. |
+| **SK** | Shared Kernel | Partes de código o bases de datos compartidas. *(Solo mencionado por completitud, en esta arquitectura evitamos Shared Kernel para priorizar desacoplamiento).* |
+
+### Guía Visual del Diagrama (Tipos de Flechas)
+Para evitar que el diagrama parezca una "telaraña", las flechas (dirección Upstream → Downstream) se categorizan en 3 estilos:
+- `--->` **(Sólidas):** Flujos de negocio directos y llamadas API de alta importancia.
+- `-.- >` **(Punteadas):** Requisitos técnicos transversales (Como la validación de tokens en IAM). Suaviza el ruido visual.
+- `===>` **(Gruesas):** Envío asíncrono de eventos (Pub/Sub). Todos los dominios "disparan" eventos hacia Notifications.
 
 ## Notas sobre el Diseño
 
