@@ -14,8 +14,6 @@ Este diagrama muestra PropConnect como una única caja de sistema, rodeada de to
 ```mermaid
 C4Context
     title PropConnect — Diagrama de Contexto del Sistema
-    
-    !define DIRECTION top to bottom
 
     Person(consultant, "Consultor", "Busca inmuebles para comprar o alquilar. Usa filtros, IA y agenda citas.")
     Person(seller, "Vendedor", "Publica inmuebles en venta o renta. Contrata asesores y tramitadores.")
