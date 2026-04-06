@@ -8,7 +8,7 @@ PropConnect es una plataforma de compra y arrendamiento de inmuebles que conecta
 
 | Enfoque | Descripción |
 |---|---|
-| **Monolito Modular** | Sistema completo en un único proceso desplegable, organizado en módulos con contratos internos explícitos. Sin overhead de red entre contextos. Ver [propuesta completa](Section 1 - Architecture Proposal/proposals/01-high-level-architecture.md). |
+| **Monolito Modular** | Sistema completo en un único proceso desplegable, organizado en módulos con contratos internos explícitos. Sin overhead de red entre contextos.. |
 | **Microservicios** | Cada bounded context como servicio independiente con su propia base de datos y pipeline de CI/CD.
 
 ## Enfoque Recomendado
