@@ -4,6 +4,14 @@ PropConnect es una plataforma de compra y arrendamiento de inmuebles que conecta
 
 ---
 
+# Autores
+
+Carlos Daniel Martínez García - 19001064
+
+Douglas Daniel Pérez Hernández - 22003865
+
+---
+
 ## Enfoques Arquitectónicos Comparados
 
 | Enfoque | Descripción |
